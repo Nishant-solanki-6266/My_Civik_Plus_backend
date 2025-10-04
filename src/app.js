@@ -18,6 +18,6 @@ app.use(express.static('public'))
 
 import { router } from './routes/user.route.js'
 
-app.use('/CivicPlus/v1/users', router)
+app.use('/CivicPlus/v1/users', router) // {router} me sb hai
 
 export { app }

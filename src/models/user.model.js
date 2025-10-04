@@ -53,6 +53,11 @@ userSchema.methods.isPassWordCorrect = async function (password) {
   return await bcrypt.compare(password, this.PassWord)
 }
 
+//extra confrim password ke liye
+userSchema.methods.isConfirmPassWordCorrect = async function (Confpassword) {
+  return await bcrypt.compare(Confpassword, this.confirmPassWord)
+}
+
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -68,7 +73,7 @@ userSchema.methods.generateAccessToken = function () {
 }
 
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id
     },

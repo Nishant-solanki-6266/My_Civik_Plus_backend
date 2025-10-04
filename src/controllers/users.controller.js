@@ -4,6 +4,18 @@ import { apiResponce } from '../utils/apiResponce.js'
 import { User } from '../models/user.model.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.js'
 
+const generateAccessAndRefreshToken = async UserID => {
+  try {
+    const user = await User.findById(UserID) // yha await nhi lgaya dekh lena bhai
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken()
+    user.refreshToken = refreshToken
+    await user.save({ validateBeforeSave: false }) // yha only user pr save hua na ki databse me
+    return { accessToken, refreshToken }
+  } catch (error) {
+    throw apiError(500, 'Token Generate Failed')
+  }
+}
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, PassWord, confirmPassWord, SSN } = req.body
 
@@ -56,4 +68,59 @@ const registerUser = asyncHandler(async (req, res) => {
   return res.status(200).json(new apiResponce(200, createUser, 'Success'))
 })
 
-export { registerUser }
+const LoginUser = asyncHandler(async (req, res) => {
+  const { SSN, PassWord, confirmPassWord } = req.body
+
+  if (!(SSN && PassWord && confirmPassWord)) {
+    throw new apiError(400, 'All Field are Required')
+  }
+
+  const user = await User.findOne({
+    $or: [{ SSN }, { PassWord }, { confirmPassWord }]
+  })
+
+  if (!user) {
+    throw new apiError(400, 'User are not  Exist')
+  }
+
+  const isPassWordValid = await user.isPassWordCorrect(PassWord)
+  if (!isPassWordValid) {
+    throw new apiError(400, 'Invalid User Creaditials')
+  }
+
+  const isConfirmPassWordValid = await user.isConfirmPassWordCorrect(
+    confirmPassWord
+  )
+  if (!isConfirmPassWordValid) {
+    throw new apiError(400, 'Invalid User Creaditials')
+  }
+  if (!isPassWordValid || !isConfirmPassWordValid) {
+    throw new apiError(400, 'PassWord Do Not Match')
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  )
+
+  const responce = await User.findById(user._id).select(
+    '-refreshToken -PassWord'
+  )
+
+  const option = {
+    httpOnly: true,
+    secure: true
+  }
+  return res
+    .status(200)
+    .cookie('AccessToken', accessToken, option)
+    .cookie('RefreshToken', refreshToken, option)
+    .json(
+      new apiResponce(
+        200,
+        { responce, accessToken, refreshToken },
+        'Loggin User successFully'
+      )
+    )
+})
+
+export { registerUser, LoginUser }
