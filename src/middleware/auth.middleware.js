@@ -15,10 +15,11 @@ const verifyJwt = asyncHandler(async (req, res, next) => {
     if (!decodedToken) {
       throw new apiError(400, 'Invalid token')
     }
-    const user = await User.findById(decodedToken?._id).select('-PassWord')
+    const user = await User.findById(decodedToken?._id).select('-PassWord') // yha password hide hai
     if (!user) {
       throw new apiError(400, 'User Not Found')
     }
+
     req.user = user
 
     next()
