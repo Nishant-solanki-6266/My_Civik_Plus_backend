@@ -19,7 +19,6 @@ const verifyJwt = asyncHandler(async (req, res, next) => {
     if (!user) {
       throw new apiError(400, 'User Not Found')
     }
-
     req.user = user
 
     next()

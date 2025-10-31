@@ -223,11 +223,14 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   // req.user.SSN = SSN
   // req.user.save({ validateBeforeSave: true })  ese bhi kr skte hai but ak new tarika
   try {
-    const user = await User.findByIdAndUpdate(req.user?._id, {
-      $set: { fullName, email, SSN }
-    })
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: { fullName, email, SSN }
+      },
+      { new: true }
+    ).select('-PassWord')
     console.log(user)
-
     return res
       .status(200)
       .json(new apiResponce(200, { user }, 'Account Updated!'))
@@ -236,11 +239,40 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     console.log('Updated Account Api Error:-', error)
   }
 })
+const updateAvatarImage = asyncHandler(async (req, res) => {
+  const localFilPath = req.file?.path
+
+  try {
+    if (!localFilPath) {
+      throw new apiError(400, 'LocalFile Not Get!')
+    }
+
+    const avatar = await uploadOnCloudinary(localFilPath)
+    if (!avatar.url) {
+      throw new apiError(400, 'Avatar Url is Not Get')
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: { avatar: avatar.url }
+      },
+      { new: true }
+    ).select('-PassWord')
+
+    return res
+      .status(200)
+      .json(new apiResponce(200, { user }, 'Avatar is Updated!'))
+  } catch (error) {
+    console.log('updateAvatar Error:-', error)
+  }
+})
+
 export {
   registerUser,
   LoginUser,
   logOutUser,
   refAccessToken,
   updatePassword,
-  updateAccountDetails
+  updateAccountDetails,
+  updateAvatarImage
 }
