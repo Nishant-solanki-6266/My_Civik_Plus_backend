@@ -49,16 +49,24 @@ Start the server
 bash
 Copy code
 npm run dev
-API Endpoints
+API Endpoints:-
+
 POST /api/register → Register new user
-
 POST /api/login → Login user
-
-GET /api/users → Get all users (password hidden)
-
+GET /api/logOutUser' → Delete {LOGOUT} user
+PATCH /api/update-password
+POST /api/refresh-token
+PATCH /api/update-accoutDetails
 POST /api/upload-avatar → Upload user avatar
 
-(Add more endpoints as your project grows)
+( User Report EndPoint):-
+
+API/V1/createReport    Create Report by
+API/V1/All-Reports      Get All Reports!
+API/V1/reportstatus/:id/status     StatusUpdate
+API/V1/delete-report/:id            DeleteReport
+
+
 
 Notes
 Make sure to add .env file to keep secrets safe
